@@ -1,0 +1,73 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Environment variables
+.env
+*.env
+
+# Docker
+*.pid
+*.log
+docker-compose.override.yml
+docker-compose*.yml
+.docker/
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Flask & Gunicorn specific
+instance/
+webapp.db
+*.sqlite3
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# MySQL Docker volume (if mounted locally)
+mysql_data/
+db_data/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Init SQL backup
+*.sql~
+
+# Token or secret files
+*.pem
+*.key
+*.crt
+*.bak
