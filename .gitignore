@@ -65,6 +65,8 @@ Thumbs.db
 
 # Init SQL backup
 init.sql
+db/
+*.db/
 
 # Token or secret files
 *.pem
