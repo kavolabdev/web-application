@@ -2,10 +2,10 @@ import os, json
 from flask import Flask, request, jsonify
 from auth_svc import access
 from auth import validate
-
+from flask_cors import CORS
 
 server = Flask(__name__)
-
+CORS(server)
 
 @server.route("/login", methods=["POST"])
 def login():
@@ -24,8 +24,7 @@ def operation():
     if error:
         return error
     
-    user_data = json.loads(decoded_token)
-    if user_data.get("admin"):
+    if decoded_token.get("admin"):
         return jsonify({"message": "Admin access granted!"}), 200
     else:
         return jsonify({"error": "Not authorized"}), 403

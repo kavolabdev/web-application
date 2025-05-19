@@ -1,8 +1,11 @@
 import jwt, datetime, os, bcrypt
 from flask import Flask, request, jsonify
 from flask_mysqldb import MySQL
+from flask_cors import CORS
+
 
 server = Flask(__name__)
+CORS(server)
 mysql = MySQL(server)
 
 server.config["MYSQL_HOST"] = os.environ.get("MYSQL_HOST")
