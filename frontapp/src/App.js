@@ -5,7 +5,7 @@ import axios from "axios";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
-  const [authorized, setAuthorized] = useState(null); // null = unknown, true/false = checked
+  const [authorized, setAuthorized] = useState(null);
 
   useEffect(() => {
     const checkAuth = async () => {
