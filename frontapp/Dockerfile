@@ -6,9 +6,8 @@ COPY . .
 RUN npm install
 RUN npm run build
 
-FROM nginx:alpine
-COPY --from=build /app/build /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+FROM httpd:2.4
+COPY --from=build /app/build/ /usr/local/apache2/htdocs/
 
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["httpd-foreground"]
