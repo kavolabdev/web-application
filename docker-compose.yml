@@ -3,7 +3,7 @@ services:
   frontapp:
     build: ./frontapp
     ports:
-      - "8000:80"
+      - "8005:80"
     container_name: frontapp
     depends_on:
       - gateway
