@@ -1,11 +1,9 @@
-version: "3.9"
-
 services:
 
   frontapp:
     build: ./frontapp
     ports:
-      - "3000:80"
+      - "8000:80"
     container_name: frontapp
     depends_on:
       - gateway
