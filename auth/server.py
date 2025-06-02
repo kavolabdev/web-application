@@ -13,7 +13,7 @@ mysql = MySQL(server)
 server.config["MYSQL_HOST"] = os.environ.get("MYSQL_HOST")
 server.config["MYSQL_USER"] = os.environ.get("MYSQL_USER")
 server.config["MYSQL_PASSWORD"] = os.environ.get("MYSQL_PASSWORD")
-server.config["MYSQL_DB"] = os.environ.get("MYSQL_DB")
+server.config["MYSQL_DB"] = os.environ.get("MYSQL_DATABASE")
 server.config["MYSQL_PORT"] = int(os.environ.get("MYSQL_PORT"))
 server.config["MYSQL_UNIX_SOCKET"] = None
 
@@ -76,4 +76,4 @@ def createJWT(username, secret, is_admin):
     return jwt.encode(payload, secret, algorithm="HS256")
 
 if __name__=="__main__":
-    server.run(host="0.0.0.0", port=5000)       
+    server.run(host="0.0.0.0", port=5000, debug=True)       

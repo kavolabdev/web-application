@@ -3,9 +3,32 @@ from flask import Flask, request, jsonify
 from auth_svc import access
 from auth import validate
 from flask_cors import CORS
+from types import SimpleNamespace
+from dotenv import load_dotenv
+
+load_dotenv()
 
 server = Flask(__name__)
 CORS(server)
+
+@server.route("/", methods=["GET"])
+def main():
+
+    username = os.environ.get("TEST_ADMIN"),
+    password = os.environ.get("TEST_PASSWORD")
+
+    mock_req = SimpleNamespace()
+    mock_req.authorization = SimpleNamespace(username=username, password=password)
+
+    token, error = access.login(mock_req)
+
+    if error:
+        return jsonify({"error": "login failed", "details": error}), 401
+    
+    return jsonify({
+        "message": f"Access granted for mock user",
+        "token": token
+    }), 200
 
 @server.route("/login", methods=["POST"])
 def login():
@@ -31,4 +54,4 @@ def operation():
 
 
 if __name__=="__main__":
-    server.run(host="0.0.0.0", port=8080)
+    server.run(host="0.0.0.0", port=8005, debug=True)

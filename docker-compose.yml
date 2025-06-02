@@ -1,20 +1,12 @@
 services:
 
-  frontapp:
-    build: ./frontapp
-    ports:
-      - "8005:80"
-    container_name: frontapp
-    depends_on:
-      - gateway
-
   gateway:
     build: ./gateway
     ports:
-      - "8080:8080"
+      - "8005:8005"
     container_name: gateway
     environment:
-      - AUTH_SVC_ADDRESS=${AUTH_SVC_ADDRESS}
+      - AUTH_SVC_ADDRESS=http://auth:5000
     depends_on:
       - auth
 

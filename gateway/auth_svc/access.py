@@ -1,7 +1,7 @@
 import os, requests
 
 
-AUTH_SVC = "http://auth:5000" #os.environ.get("AUTH_SVC_ADDRESS")
+AUTH_SVC = os.environ.get("AUTH_SVC_ADDRESS")
 
 def login(request):
     auth = request.authorization
