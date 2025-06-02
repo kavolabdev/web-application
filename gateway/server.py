@@ -1,5 +1,5 @@
 import os, json
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from auth_svc import access
 from auth import validate
 from flask_cors import CORS
@@ -25,10 +25,12 @@ def main():
     if error:
         return jsonify({"error": "login failed", "details": error}), 401
     
-    return jsonify({
-        "message": f"Access granted for mock user",
-        "token": token
-    }), 200
+    # return jsonify({
+    #     "message": f"Access granted for mock user",
+    #     "token": token
+    # }), 200
+
+    return send_from_directory('static', 'index.html')
 
 @server.route("/login", methods=["POST"])
 def login():
