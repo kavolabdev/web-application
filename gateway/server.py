@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-server = Flask(__name__)
+server = Flask(__name__, static_folder='static', static_url_path='')
 CORS(server)
 
 @server.route("/", methods=["GET"])
