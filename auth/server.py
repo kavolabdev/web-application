@@ -1,4 +1,4 @@
-import jwt, datetime, os, bcrypt
+import jwt, datetime, os
 from flask import Flask, request, jsonify
 from flask_mysqldb import MySQL
 from flask_cors import CORS
@@ -17,9 +17,9 @@ server.config["MYSQL_DB"] = os.environ.get("MYSQL_DATABASE")
 server.config["MYSQL_PORT"] = int(os.environ.get("MYSQL_PORT"))
 server.config["MYSQL_UNIX_SOCKET"] = None
 
-@server.route("/", methods=["GET"])
+@server.route("/health", methods=["GET"])
 def index():
-    return "hello from index"
+    return "running"
 
 @server.route("/login", methods=["POST"])
 def login():  
@@ -32,16 +32,19 @@ def login():
 
     try: 
         cur = mysql.connection.cursor()
-        res = cur.execute("SELECT email, password FROM user WHERE email=%s", (email,))
+        res = cur.execute("SELECT email, password, user_group, company_code FROM user WHERE email=%s", (email,))
 
         if res > 0:
             user_row = cur.fetchone()
-            stored_email, stored_password = user_row
+            stored_email, stored_password, stored_group, stored_company = user_row
             
             if stored_password == password:
-                token = createJWT(stored_email, os.environ.get("JWT_SECRET"), True)
+                is_admin = stored_group == 'admin'
+                token = createJWT(stored_email, os.environ.get("JWT_SECRET"), is_admin, stored_company)
                 return jsonify({"token": token})
-    
+
+        cur.close()
+
     except Exception as e:
         return jsonify({"error": "internal server error", "details": str(e)}), 500
         
@@ -66,14 +69,15 @@ def validate():
     except jwt.InvalidTokenError:
         return jsonify({"error": "invalid token"}), 403
 
-def createJWT(username, secret, is_admin):
+def createJWT(username, secret, is_admin, company_code):
     payload = {
         "username": username,
         "admin": is_admin,
+        "company": company_code,
         "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1),
         "iat": datetime.datetime.now(datetime.timezone.utc)
     }
     return jwt.encode(payload, secret, algorithm="HS256")
 
 if __name__=="__main__":
-    server.run(host="0.0.0.0", port=5000, debug=True)       
+    server.run(host="0.0.0.0", port=5000, debug=True)          
