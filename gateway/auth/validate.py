@@ -1,4 +1,7 @@
 import os, requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 AUTH_SVC = os.environ.get("AUTH_SVC_ADDRESS")
 

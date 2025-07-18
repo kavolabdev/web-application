@@ -1,20 +1,22 @@
 import os, json
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 from auth_svc import access
 from auth import validate
+from crud_svc import req_op
 from flask_cors import CORS
 from types import SimpleNamespace
 from dotenv import load_dotenv
 
 load_dotenv()
 
-server = Flask(__name__, static_folder='static', static_url_path='')
+server = Flask(__name__)
 CORS(server)
 
-@server.route("/", methods=["GET"])
+
+@server.route("/health", methods=["GET"])
 def main():
 
-    username = os.environ.get("TEST_ADMIN"),
+    username = os.environ.get("TEST_USER"),
     password = os.environ.get("TEST_PASSWORD")
 
     mock_req = SimpleNamespace()
@@ -25,12 +27,7 @@ def main():
     if error:
         return jsonify({"error": "login failed", "details": error}), 401
     
-    # return jsonify({
-    #     "message": f"Access granted for mock user",
-    #     "token": token
-    # }), 200
-
-    return send_from_directory('static', 'index.html')
+    return jsonify({"message": "ok"}), 200
 
 @server.route("/login", methods=["POST"])
 def login():
@@ -43,6 +40,20 @@ def login():
     
 @server.route("/operation", methods=["POST"])
 def operation():
+    access, error = validate.token(request)
+    decoded_token = json.loads(access)
+
+    if error:
+        return error
+    
+    if decoded_token:
+        company = decoded_token.get("company")
+        if not company:
+            return jsonify({"error": "Company missing"}), 403
+        return req_op.send(request)
+    
+@server.route("/admin", methods=["POST"])
+def admin():
     access, error = validate.token(request)
     decoded_token = json.loads(access)
 
