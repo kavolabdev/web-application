@@ -2,7 +2,7 @@ import os, json
 from flask import Flask, request, jsonify
 from auth_svc import access
 from auth import validate
-from crud_svc import req_op
+from crud_svc import reqop
 from flask_cors import CORS
 from types import SimpleNamespace
 from dotenv import load_dotenv
@@ -41,16 +41,31 @@ def login():
 @server.route("/operation", methods=["POST"])
 def operation():
     access, error = validate.token(request)
-    decoded_token = json.loads(access)
 
     if error:
         return error
     
-    if decoded_token:
-        company = decoded_token.get("company")
-        if not company:
-            return jsonify({"error": "Company missing"}), 403
-        return req_op.send(request)
+    decoded_token = json.loads(access)
+    company = decoded_token.get("company")
+    group = decoded_token.get("user_group")
+
+    if not company:
+        return jsonify({"error": "Company missing"}), 403
+    
+    try:
+        original_data = request.get_json(force=True)
+
+        modified_payload = original_data.copy()
+        modified_payload["database"] = company
+        modified_payload["company"] = company
+        if group:
+            modified_payload["group"] = group
+        
+        return reqop.send(request, modified_payload)
+    
+    except Exception as e:
+        return jsonify({"error": "Failed to prepare operation", "details": str(e)}), 500
+
     
 @server.route("/admin", methods=["POST"])
 def admin():
@@ -60,8 +75,12 @@ def admin():
     if error:
         return error
     
-    if decoded_token.get("admin"):
-        return jsonify({"message": "Admin access granted!"}), 200
+    if decoded_token.get("user_group"):
+        group = decoded_token.get("user_group")
+        if group=="admin":
+            return jsonify({"message": "Admin access granted!"}), 200
+        else:
+            return jsonify({"error": "Not authorized"}), 403
     else:
         return jsonify({"error": "Not authorized"}), 403
 

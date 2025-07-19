@@ -66,6 +66,8 @@ Thumbs.db
 init.sql
 db/
 *.db/
+mongo-init/
+test.txt
 
 # Token or secret files
 *.pem

@@ -1,6 +1,6 @@
 import os
 from flask import Flask, request, jsonify
-from flask_mysqldb import MySQL
+from pymongo import MongoClient
 from flask_cors import CORS
 from dotenv import load_dotenv
 
@@ -8,55 +8,52 @@ load_dotenv()
 
 server = Flask(__name__)
 CORS(server)
-mysql = MySQL(server)
 
-server.config["MYSQL_HOST"] = os.environ.get("MYSQL_HOST")
-server.config["MYSQL_USER"] = os.environ.get("MYSQL_USER")
-server.config["MYSQL_PASSWORD"] = os.environ.get("MYSQL_PASSWORD")
-server.config["MYSQL_DB"] = os.environ.get("MYSQL_DATABASE")
-server.config["MYSQL_PORT"] = int(os.environ.get("MYSQL_PORT"))
-server.config["MYSQL_CURSORCLASS"] = "DictCursor"
-server.config["MYSQL_UNIX_SOCKET"] = None
+MONGO_HOST = os.environ.get("MONGO_HOST", "localhost")
+MONGO_PORT = int(os.environ.get("MONGO_PORT", 27017))
+MONGO_USER = os.environ.get("MONGO_USER")
+MONGO_PASSWORD = os.environ.get("MONGO_PASSWORD")
+if MONGO_USER and MONGO_PASSWORD:
+    MONGO_URI = f"mongodb://{MONGO_USER}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}/?authSource=admin"
+else:
+    MONGO_URI = f"mongodb://{MONGO_HOST}:{MONGO_PORT}"
+
+client = MongoClient(MONGO_URI)
 
 @server.route("/operate", methods=["POST"])
 def operate():
     try:
         data = request.get_json()
-        company = data.get("company")
+
+        database_name = data.get("database")
+        table_name = data.get("table")
         operation = data.get("operation")
-        database = data.get("database")
-        table = data.get("table")
         payload = data.get("payload", {})
 
-        if not company or not operation:
-            return jsonify({"error": "Missing 'company' or 'operation'"}), 400
+        if not all([database_name, table_name, operation]):
+            return jsonify({"error": "Missing 'database', 'table', or 'operation'"}), 400
 
-        cursor = mysql.connection.cursor()
-        cursor.execute(f"USE `{database}`")
+        db = client[database_name]
+        collection = db[table_name]
 
-        if operation == "insert":
-            columns = ', '.join(payload.keys())
-            placeholders = ', '.join(['%s'] * len(payload))
-            values = list(payload.values())
-            query = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
-            cursor.execute(query, values)
-            mysql.connection.commit()
-            return jsonify({"message": "Insert successful"}), 200
+        if operation == "insertOne":
+            result = collection.insert_one(payload)
+            return jsonify({"inserted_id": str(result.inserted_id)}), 200
 
-        elif operation == "select":
-            where_clause = payload.get("where", "1=1")
-            query = f"SELECT * FROM {table} WHERE {where_clause}"
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            return jsonify(rows), 200
+        elif operation == "find":
+            filter_ = payload.get("filter", {})
+            projection = payload.get("projection")
+            cursor = collection.find(filter_, projection)
+            results = [doc for doc in cursor]
+            for doc in results:
+                doc["_id"] = str(doc["_id"])
+            return jsonify(results), 200
 
         else:
-            return jsonify({"error": "Unsupported operation"}), 400
+            return jsonify({"error": "Unsupported operation", "data": data}), 400
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    finally:
-        cursor.close()
 
 @server.route("/health", methods=["GET"])
 def health():

@@ -32,15 +32,14 @@ def login():
 
     try: 
         cur = mysql.connection.cursor()
-        res = cur.execute("SELECT email, password, user_group, company_code FROM user WHERE email=%s", (email,))
+        res = cur.execute("SELECT email, password, company_code, user_group FROM user WHERE email=%s", (email,))
 
         if res > 0:
             user_row = cur.fetchone()
-            stored_email, stored_password, stored_group, stored_company = user_row
+            stored_email, stored_password, stored_company, stored_group = user_row
             
             if stored_password == password:
-                is_admin = stored_group == 'admin'
-                token = createJWT(stored_email, os.environ.get("JWT_SECRET"), is_admin, stored_company)
+                token = createJWT(stored_email, os.environ.get("JWT_SECRET"), stored_company, stored_group)
                 return jsonify({"token": token})
 
         cur.close()
@@ -69,10 +68,10 @@ def validate():
     except jwt.InvalidTokenError:
         return jsonify({"error": "invalid token"}), 403
 
-def createJWT(username, secret, is_admin, company_code):
+def createJWT(username, secret, company_code, user_group):
     payload = {
         "username": username,
-        "admin": is_admin,
+        "user_group": user_group,
         "company": company_code,
         "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1),
         "iat": datetime.datetime.now(datetime.timezone.utc)

@@ -7,7 +7,6 @@ flask-cors==6.0.1
 idna==3.10
 itsdangerous==2.2.0
 Jinja2==3.1.6
-kafka-python==2.2.15
 MarkupSafe==3.0.2
 python-dotenv==1.1.0
 requests==2.32.4
