@@ -31,6 +31,7 @@ services:
     build: ./crudop
     ports:
       - "5002:5002"
+    container_name: crudop
     environment:
       - MYSQL_HOST=db
       - MYSQL_USER=${MYSQL_CRUD_USER}
